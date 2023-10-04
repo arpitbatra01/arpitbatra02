@@ -1,0 +1,61 @@
+import requests
+import os
+import subprocess
+
+# GitHub API token (replace with your own token)
+GITHUB_TOKEN = "YOUR_GITHUB_TOKEN"
+
+def search_projects(query):
+headers = {
+"Authorization": f"token {GITHUB_TOKEN}"
+}
+params = {
+"q": query,
+"sort": "stars",
+"order": "desc"
+}
+response = requests.get("https://api.github.com/search/repositories", headers=headers, params=params)
+
+if response.status_code == 200:
+return response.json()["items"]
+else:
+print("Failed to fetch projects from GitHub.")
+return []
+
+def clone_repository(repo_url):
+subprocess.run(["git", "clone", repo_url])
+
+def main():
+print("Welcome to Hacktoberfest Project Finder!")
+query = input("Enter a keyword to search for projects: ")
+
+projects = search_projects(query)
+
+if not projects:
+print("No projects found. Try a different search term.")
+return
+
+print("\nTop 5 projects:")
+for i, project in enumerate(projects[:5], start=1):
+print(f"{i}. {project['name']} - {project['html_url']}")
+
+choice = input("\nEnter the project number to clone (0 to exit): ")
+
+if choice == "0":
+return
+
+try:
+choice = int(choice)
+if 1 <= choice <= 5:
+selected_project = projects[choice - 1]
+clone_repository(selected_project["clone_url"])
+print(f"Cloning {selected_project['name']}...")
+else:
+print("Invalid choice. Please enter a number between 1 and 5.")
+except ValueError:
+print("Invalid input. Please enter a number.")
+
+if __name__ == "__main__":
+main()
+
+# Program created bu arpitbatra01
